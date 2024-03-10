@@ -87,9 +87,24 @@ class MainWindow(QMainWindow):
     def update_table_data(self):
         self.cursor.execute("SELECT * FROM productos")
         self.table_data = self.cursor.fetchall()
+
+        # Obtener los encabezados de la base de datos
+        header_query = self.cursor.execute("PRAGMA table_info(productos)")
+        headers = [header[1] for header in header_query.fetchall()]
+
+        # Combinar los encabezados con los datos
+        model_data = [headers] + self.table_data
+
+        # Crear e instanciar el modelo con los datos
+        model = InvoiceModel(model_data)
+
+        # Asignar el modelo a la vista de la tabla
+        self.table_view.setModel(model)
+
         # Asegúrate de que el modelo esté asignado antes de llamar a layoutChanged.emit()
         if self.table_view.model() is not None:
             self.table_view.model().layoutChanged.emit()
+
     def closeEvent(self, event):
         self.conn.close()
         super().closeEvent(event)
